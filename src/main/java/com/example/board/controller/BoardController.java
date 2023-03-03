@@ -1,6 +1,6 @@
 package com.example.board.controller;
 
-import com.example.board.dto.Board;
+import com.example.board.domain.Board;
 import com.example.board.dto.LoginInfo;
 import com.example.board.service.BoardService;
 import lombok.RequiredArgsConstructor;
@@ -21,13 +21,13 @@ public class BoardController {
     // 게시물 목록을 보여준다.
     // 리턴하는 문자열은 템플릿 이름이다. (forward)
     @GetMapping("/")
-    public String list(@RequestParam(name = "page", defaultValue = "1") int page, HttpSession session, Model model) { // HttpSession, Model은 Spring이 자동으로 넣어준다.
+    public String list(@RequestParam(name = "page", defaultValue = "0") int page, HttpSession session, Model model) { // HttpSession, Model은 Spring이 자동으로 넣어준다.
         LoginInfo loginInfo = (LoginInfo)session.getAttribute("loginInfo");
         model.addAttribute("loginInfo", loginInfo);
 
-        int totalCount = boardService.getTotalCount(); // 전체 게시물 수
+        long totalCount = boardService.getTotalCount(); // 전체 게시물 수
         List<Board> list = boardService.getBoards(page); // page가 1,2,3,4 ....
-        int pageCount = totalCount / 10;
+        long pageCount = totalCount / 10;
         if (totalCount % 10 > 0) {
             pageCount++;
         }
@@ -122,7 +122,7 @@ public class BoardController {
             return "redirect:/loginform";
         }
         Board board = boardService.getBoard(boardId, false);
-        if (board.getUserId() != loginInfo.getUserId()) {
+        if (board.getUser().getUserId() != loginInfo.getUserId()) {
             return "redirect:/board?boardId=" + boardId; // 글 보기로 이동한다.
         }
         boardService.updateBoard(boardId, title, content);
